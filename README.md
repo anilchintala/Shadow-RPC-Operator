@@ -1,2 +1,2 @@
 # Shadow-RPC-Operator
-Shadow Operator resources for running high performance &amp; high stability RPC nodes
+Shadow Operator resources for running high performance &amp; high stability RPC nodes to earn rewards
