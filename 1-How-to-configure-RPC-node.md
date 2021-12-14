@@ -21,7 +21,7 @@ usermod -aG sudo sol
 su - sol
 
 ```
-update, config for RPC
+Partition hard drive for RPC
 Partition NVME into 420gb (swap) and 3000gb (ledger)
 
 adding new process using GPT partition with gdisk for larger filessytems. Make larger 3.5 (or 3.8) TB drive an ext4 via gdisk then partition using fdisk as normal. You have to delete the original GPT in order to select partition 1 with fdisk
@@ -54,22 +54,40 @@ sudo mkdir /mt/
 sudo mkdir /mt/ledger
 
 sudo mkdir ~/log
-
+```
+Discover the swap directory, turn it off, make a new one and turn it on
+```
 sudo swapon --show
+
 sudo swapoff /dev/sda2
 
-sudo sed --in-place '/swap.img/d' /etc/fstab;sudo mount /dev/nvme0n1p2 /mnt/;sudo mount /dev/nvme0n1p1 /mt
+sudo sed --in-place '/swap.img/d' /etc/fstab
 
-sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=385k
+sudo mount /dev/nvme0n1p2 /mnt/
 
+sudo mount /dev/nvme0n1p1 /mt
 
-sudo chmod 600 /mnt/swapfile;sudo mkswap /mnt/swapfile;echo 'vm.swappiness=1' | sudo tee --append /etc/sysctl.conf > /dev/null;sudo sysctl -p;sudo swapon --all --verbose
+sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=350k
+```
+it can take up to 5 minutes for the machine to make this size swapfile. sit tight.
+
+next is setting permissions and adding the swapfile to fstab, then edit the swapiness to 30.
+```
+sudo chmod 600 /mnt/swapfile
+
+sudo mkswap /mnt/swapfile
+
+echo 'vm.swappiness=1' | sudo tee --append /etc/sysctl.conf > /dev/null
+
+sudo sysctl -p
+
+sudo swapon --all --verbose
 ```
 capture nvme0n1p1 and nvme0n1p2 UUIDs to edit into /etc/fstab
 ```
 lsblk -f
 ```
-copy the section that looks like this and past it into a notepad:
+copy the section that looks like this and past it into a notepad (or VScode, etc) so that you can copy/past into fstab properly. We just need the UUID's so in the example below copy "5c24e241-239c-4aa5-baa6-fbb6fb44a847" and "87645b08-85c2-4fe2-9974-1bda4de317d9" and note which partition each belongs to (/mt and /mnt respectively)
 ```
 nvme0n1
 ├─nvme0n1p1 ext4         5c24e241-239c-4aa5-baa6-fbb6fb44a847    2.8T     0% /mt
@@ -88,24 +106,44 @@ Copy the below into a notepad along with the above "lsblk -f" information and th
 UUID=5c24e241-239c-4aa5-baa6-fbb6fb44a847 /mt  auto nosuid,nodev,nofail 0 0
 UUID=87645b08-85c2-4fe2-9974-1bda4de317d9 /mnt  auto nosuid,nodev,nofail 0 0
 #ramdrive and swap
-tmpfs /mnt/ramdrive tmpfs rw,size=50G 0 0
+#tmpfs /mnt/ramdrive tmpfs rw,size=50G 0 0
 /mnt/swapfile none swap sw 0 0
 ```
 save / exit
 ctrl+s, ctrl+x
 
+But Wait - what was that ramdrive and tmpfs stuff? Leave it for now. That is an performance enhancement option that will be covered in later documentation. In short, it's for running the solana accounts inside the memory of the server verssu on the hard drive. More on this later.
+
 now edit permissions and make sure directories are made again (i think the order of ops is a little off here since the reformating of GPT using fdisk whipes the secondary directories of ledger & ramdrive while keeping the mountpoints for the nvme of /mnt and /mt. easy enough to just remake directories though)
 ```
-sudo mkdir /mnt/ramdrive;sudo mkdir /mt/ledger;sudo mkdir /mt/ledger/validator-ledger;sudo ls -ld /mt/ledger;sudo chown sol:sol /mt/ledger;sudo chown sol:sol ~/log;sudo chown sol:sol /mt/ledger/validator-ledger;sudo mount --all --verbose
+sudo mkdir /mnt/ramdrive
+
+sudo mkdir /mt/ledger
+
+sudo mkdir /mt/ledger/validator-ledger
+
+sudo ls -ld /mt/ledger
+
+sudo chown sol
+
+sol /mt/ledger
+
+sudo chown sol:sol ~/log
+
+sudo chown sol:sol /mt/ledger/validator-ledger
+
+sudo mount --all --verbose
 ```
 
 firewall / ssh
 ```
 sudo snap install ufw
+
 sudo ufw enable
+
 sudo ufw allow ssh
 ```
-dump this command block
+dump this entire command block
 ```
 sudo ufw allow 80;sudo ufw allow 80/udp;sudo ufw allow 80/tcp;sudo ufw allow 53;sudo ufw allow 53/tcp;sudo ufw allow 53/udp;sudo ufw allow 8899;sudo ufw allow 8899/tcp;sudo ufw allow 8900/tcp;sudo ufw allow 8900/udp;sudo ufw allow 8901/tcp;sudo ufw allow 8901/udp;sudo ufw allow 9900/udp;sudo ufw allow 9900/tcp;sudo ufw allow 9900;sudo ufw allow 8899/udp;sudo ufw allow 8900;sudo ufw allow 8000:8020/tcp;sudo ufw allow 8000:8020/udp
 ```
