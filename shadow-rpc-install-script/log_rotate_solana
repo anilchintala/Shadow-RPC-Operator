@@ -1,0 +1,9 @@
+/home/sol/log/solana-validator.log {
+  su sol sol
+  daily
+  rotate 7
+  missingok
+  postrotate
+    systemctl kill -s USR1 sol.service
+  endscript
+}
