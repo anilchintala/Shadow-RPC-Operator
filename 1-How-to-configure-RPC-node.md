@@ -30,7 +30,7 @@ Enter the "n" then hit enter
 Etner the "1" then hit enter...and so on
 ```
 sudo gdisk /dev/nvme0n1
-n, 1, 2048, [max secor available], 8300, p, w
+n, 1, p, 2048, [max secor available], 8300, p, w
 ```
 note the first step in the next section is deleting the partition we just created above
 ```
@@ -124,9 +124,7 @@ sudo mkdir /mt/ledger/validator-ledger
 
 sudo ls -ld /mt/ledger
 
-sudo chown sol
-
-sol /mt/ledger
+sudo chown sol:sol /mt/ledger
 
 sudo chown sol:sol ~/log
 
@@ -179,51 +177,60 @@ this is the solana-validator start up shell script which the system service (sol
 sudo vim ~/start-validator.sh
 ```
 dump this into start-validator.sh:
-THIS IS VERSION 2 ( updated 07/15/2021)
+
 ```
 #!/bin/bash
+# v0.5 Shadow Node ( updated 12/14/2021)
+export SOLANA_METRICS_CONFIG=host=https://metrics.solana.com:8086,db=mainnet-beta,u=mainnet-beta_write,p=password
+PATH=/home/sol/.local/share/solana/install/active_release/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
+export RUST_BACKTRACE=1
+export RUST_LOG=solana=info,solana_core::rpc=debug
+export GOOGLE_APPLICATION_CREDENTIALS=/home/sol/solarchival-d87f0b4f3f3c.json
 exec solana-validator \
---entrypoint entrypoint.mainnet-beta.solana.com:8001 \
---entrypoint entrypoint2.mainnet-beta.solana.com:8001 \
---entrypoint entrypoint3.mainnet-beta.solana.com:8001 \
---entrypoint entrypoint4.mainnet-beta.solana.com:8001 \
---entrypoint entrypoint5.mainnet-beta.solana.com:8001 \
---trusted-validator 7cVfgArCheMR6Cs4t6vz5rfnqd56vZq4ndaBrY5xkxXy \
---trusted-validator DDnAqxJVFo2GVTujibHt5cjevHMSE9bo8HJaydHoshdp \
---trusted-validator Ninja1spj6n9t5hVYgF3PdnYz2PLnkt7rvaw3firmjs \
---trusted-validator wWf94sVnaXHzBYrePsRUyesq6ofndocfBH6EmzdgKMS \
---trusted-validator 7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2 \
---trusted-validator GdnSyH3YtwcxFvQrVVJMm1JhTS4QVX7MFsX56uJLUfiZ \
---trusted-validator DE1bawNcRJB9rVm3buyMVfr8mBEoyyu73NBovf2oXJsJ \
---trusted-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S \
---rpc-port 8899 \
---dynamic-port-range 8002-8020 \
---no-port-check \
---gossip-port 8001 \
---no-untrusted-rpc \
---no-voting \
---private-rpc \
---rpc-send-retry-ms 1000 \
---enable-cpi-and-log-storage \
---enable-rpc-transaction-history \
---account-index program-id \
---account-index spl-token-owner \
---account-index spl-token-mint \
---rpc-bigtable-timeout 600 \
---enable-rpc-bigtable-ledger-storage \
---no-duplicate-instance-check \
---wal-recovery-mode skip_any_corrupted_record \
---identity ~/validator-keypair.json \
---vote-account ~/vote-account-keypair.json \
---log ~/log/solana-validator.log \
---accounts /mt/solana-accounts \
---ledger /mt/ledger/validator-ledger \
---limit-ledger-size 700000000 \
---rpc-pubsub-max-active-subscriptions 100000 \
---rpc-pubsub-max-connections 1000 \
---rpc-threads 48 \
+    --identity ~/validator-keypair.json \
+    --entrypoint entrypoint.mainnet-beta.solana.com:8001 \
+    --entrypoint entrypoint2.mainnet-beta.solana.com:8001 \
+    --entrypoint entrypoint3.mainnet-beta.solana.com:8001 \
+    --entrypoint entrypoint4.mainnet-beta.solana.com:8001 \
+    --entrypoint entrypoint5.mainnet-beta.solana.com:8001 \
+    --known-validator 7cVfgArCheMR6Cs4t6vz5rfnqd56vZq4ndaBrY5xkxXy \
+    --known-validator DDnAqxJVFo2GVTujibHt5cjevHMSE9bo8HJaydHoshdp \
+    --known-validator Ninja1spj6n9t5hVYgF3PdnYz2PLnkt7rvaw3firmjs \
+    --known-validator wWf94sVnaXHzBYrePsRUyesq6ofndocfBH6EmzdgKMS \
+    --known-validator 7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2 \
+    --known-validator GdnSyH3YtwcxFvQrVVJMm1JhTS4QVX7MFsX56uJLUfiZ \
+    --known-validator DE1bawNcRJB9rVm3buyMVfr8mBEoyyu73NBovf2oXJsJ \
+    --known-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S \
+    --rpc-port 8899 \
+    --dynamic-port-range 8002-8020 \
+    --no-port-check \
+    --gossip-port 8001 \
+    --no-untrusted-rpc \
+    --no-voting \
+    --private-rpc \
+    --rpc-bind-address 0.0.0.0 \
+    --rpc-send-retry-ms 10 \
+    --enable-cpi-and-log-storage \
+    --enable-rpc-transaction-history \
+    --enable-rpc-bigtable-ledger-storage \
+    --rpc-bigtable-timeout 600 \
+    --account-index program-id \
+    --account-index spl-token-owner \
+    --account-index spl-token-mint \
+    --rpc-pubsub-enable-vote-subscription \
+    --no-duplicate-instance-check \
+    --wal-recovery-mode skip_any_corrupted_record \
+    --vote-account ~/vote-account-keypair.json \
+    --log ~/log/solana-validator.log \
+    --accounts /mt/solana-accounts \
+    --ledger /mt/ledger/validator-ledger \
+    --limit-ledger-size 700000000 \
+    --rpc-pubsub-max-connections 1000 \
+    --enable-rpc-obsolete_v1_7 \
+
 ```
 save / exit (:wq)
+
 make executable
 ```
 sudo chmod +x ~/start-validator.sh
@@ -291,7 +298,7 @@ dump this into file:
 /home/sol/log/solana-validator.log {
   su sol sol
   daily
-  rotate 7
+  rotate 1
   missingok
   postrotate
     systemctl kill -s USR1 sol.service
@@ -302,28 +309,7 @@ reset log rotate
 ```
 sudo systemctl restart logrotate
 ```
-start up and test
 
-```
-sudo systemctl enable --now systuner.service
-
-sudo systemctl status systuner.service
-
-sudo systemctl enable --now sol.service
-
-sudo systemctl status sol.service
-```
-or this (prefer the above the option to use bash is just for debugging)
-```
-bash ~/start-validator.sh
-```
-tail log to make sure it's fetching snapshot and working
-```
-sudo tail -f ~/log/solana-validator.log
-```
-
-
-# Performance Tuning
 CPU to performance mode (careful with this)
 ```
 sudo apt-get install cpufrequtils
@@ -339,19 +325,11 @@ sudo vim /etc/sysctl.conf
 edit into bottom of file
 
 ```
-# other tunings
+# other tunings with influence and thanks to the awesome team at rpcpool (aka Triton)
 # sysctl_optimisations:
 vm.max_map_count=1000000
-kernel.nmi_watchdog=0
-# Minimal preemption granularity for CPU-bound tasks:
-# (default: 1 msec#  (1 + ilog(ncpus)), units: nanoseconds)
-kernel.sched_min_granularity_ns=10000000
-# SCHED_OTHER wake-up granularity.
-# (default: 1 msec#  (1 + ilog(ncpus)), units: nanoseconds)
-kernel.sched_wakeup_granularity_ns=15000000 
-vm.swappiness=30
-kernel.hung_task_timeout_secs=600
-# this means that virtual memory statistics is gathered less often but is a reasonable trade off for lower latency
+vm.swappiness=20
+kernel.hung_task_timeout_secs=300
 vm.stat_interval=10
 vm.dirty_ratio=40
 vm.dirty_background_ratio=10
@@ -362,11 +340,49 @@ kernel.timer_migration=0
 # A suggested value for pid_max is 1024 * <# of cpu cores/threads in system>
 kernel.pid_max=49152
 net.ipv4.tcp_fastopen=3
-# From solana systuner
-# Reference: https://medium.com/@CameronSparr/increase-os-udp-buffers-to-improve-performance-51d167bb1360
+# solana systuner
 net.core.rmem_max=134217728
 net.core.rmem_default=134217728
 net.core.wmem_max=134217728
 net.core.wmem_default=134217728
 ```
 
+# start up and test
+
+```
+sudo systemctl enable --now systuner.service
+
+sudo systemctl status systuner.service
+
+sudo systemctl enable --now sol.service
+
+sudo systemctl status sol.service
+```
+or this (prefer the above the option to use bash is just for debugging)
+```
+./start-validator.sh
+```
+tail log to make sure it's fetching snapshot and working
+```
+sudo tail -f ~/log/solana-validator.log
+```
+The result should be the machine start tailing the validator log. It can take up to 20 minutes to download a snapshot and begin catching up. The catchup can take up to 45 minutes as well. You can run healthchecks to know when the machine is on the top of the cahin (healthy and ready to serve data) by using some of the below commands:
+
+Healthcheck - you want this to return the work "Ok"
+
+If can also return a 'behind by x number of slots" which means it behind the "tip" of the chain by that many slots. Nodes can sometimes fall a little behind and that's normal. Anything above about 100 behind mean you will serve stale data.
+```
+curl http://localhost:8899 -k -X POST -H "Content-Type: application/json" -d '
+  {"jsonrpc":"2.0","id":1, "method":"getHealth"}
+'
+```
+
+Tracking root slot
+```
+timeout 120 solana catchup --our-localhost=8899 --log --follow --commitment root
+```
+curl for getBlockProduction - this is a simple curl and calls for a little bit larger JSON data response. It should be nearly instant. if it isn't there is a problem.
+```
+curl http://localhost:8899 -k -X POST -H "Content-Type: application/json" -H "Referer: SSCLabs" -d '{"jsonrpc":"2.0","id":1, "method":"getBlockProduction"}
+'
+```

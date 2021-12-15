@@ -1,6 +1,6 @@
 # How to connect
 
-We are currently in early alpha testing of independent RPC operators. We are conducting internal testing and refining documentation to assist in the onboarding of more Operators. 
+We are currently in early alpha testing of independent RPC operators. We are conducting internal testing and refining documentation to assist in the onboarding of more Operators. Please stay tuned as this section will eventually include more specifics.
 
 Connecting to our network currently involves three steps:
 
