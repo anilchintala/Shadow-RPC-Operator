@@ -145,8 +145,8 @@ dump this entire command block
 ```
 sudo ufw allow 80;sudo ufw allow 80/udp;sudo ufw allow 80/tcp;sudo ufw allow 53;sudo ufw allow 53/tcp;sudo ufw allow 53/udp;sudo ufw allow 8899;sudo ufw allow 8899/tcp;sudo ufw allow 8900/tcp;sudo ufw allow 8900/udp;sudo ufw allow 8901/tcp;sudo ufw allow 8901/udp;sudo ufw allow 9900/udp;sudo ufw allow 9900/tcp;sudo ufw allow 9900;sudo ufw allow 8899/udp;sudo ufw allow 8900;sudo ufw allow 8000:8020/tcp;sudo ufw allow 8000:8020/udp
 ```
-reboot. test mounts, swaps, ramdrive, etc. Reboot should mount to both /nvme0n1p1 and p2 on both /mt and /mtn. 
-# Install Solana CLI! Don't forget to check version.
+# Install Solana CLI! Don't forget to check for current version (1.8.10 as of 12/14/21)
+
 these are three seperate commands below:
 
 ```
@@ -158,11 +158,11 @@ solana-gossip spy --entrypoint entrypoint.mainnet-beta.solana.com:8001
 ```
 if the machine is gossiping without any errors it can be spun up on the mainnet to start reading the chain.
 
-exit gosspy with ctrl + c
+exit gossip with ctrl + c
 
 create keys.
 
-IF RPC then these are throw away keys. You do not need to set a password for the keys. no need to copy seed phrases. You do not need a wallet-keypair if just RPC. Skip to making validator-keypair
+RPCs use throw away keys. These keys allow and RPC to be fully functional but do not need funds and do not need to be saved (because you can just make new ones if you need to ). You do not need to set a password for the keys. No need to copy seed phrases. You do not need a wallet-keypair if just RPC. 
 ```
 solana-keygen new -o ~/validator-keypair.json
 
