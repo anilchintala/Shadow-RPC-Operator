@@ -1,5 +1,7 @@
 # Notes on install script 
 
+IMPORTANT: This script will only work on a Solana Server Program machine at an Equinix data center. For all other machiens, please see our 
+
 Security updates, choose your password, set up user with sudo permissions:
 ```
 sudo apt update -y;echo -ne '\n' | sudo apt upgrade -y;sudo apt-get dist-upgrade;echo -ne '\n' | adduser sol;echo "sol:[PASSWORD]" | chpasswd;usermod -aG sudo sol;su - sol
