@@ -147,32 +147,34 @@ dump this entire command block
 ```
 sudo ufw allow 80;sudo ufw allow 80/udp;sudo ufw allow 80/tcp;sudo ufw allow 53;sudo ufw allow 53/tcp;sudo ufw allow 53/udp;sudo ufw allow 8899;sudo ufw allow 8899/tcp;sudo ufw allow 8900/tcp;sudo ufw allow 8900/udp;sudo ufw allow 8901/tcp;sudo ufw allow 8901/udp;sudo ufw allow 9900/udp;sudo ufw allow 9900/tcp;sudo ufw allow 9900;sudo ufw allow 8899/udp;sudo ufw allow 8900;sudo ufw allow 8000:8020/tcp;sudo ufw allow 8000:8020/udp
 ```
-# reboot. test mounts, swaps, ramdrive, etc. Reboot should mount to both /nvme0n1p1 and p2 on both /mt and /mt. 
-
-
+reboot. test mounts, swaps, ramdrive, etc. Reboot should mount to both /nvme0n1p1 and p2 on both /mt and /mtn. 
 # Install Solana CLI! Don't forget to check version.
 these are three seperate commands below:
+
 ```
-sh -c "$(curl -sSfL https://release.solana.com/v1.7.14/install)"
+sh -c "$(curl -sSfL https://release.solana.com/v1.8.10/install)"
+
 export PATH="/home/sol/.local/share/solana/install/active_release/bin:$PATH"
+
 solana-gossip spy --entrypoint entrypoint.mainnet-beta.solana.com:8001
 ```
-if the machine is gossiping withour any errors it can be spun up on the mainnet to start reading the chain.
+if the machine is gossiping without any errors it can be spun up on the mainnet to start reading the chain.
 
 exit gosspy with ctrl + c
 
 create keys.
-IF A a validator always set a password for the wallet-keypair key. log it on 1password. make sure the team knows you are storing keys for a validator and get guidance). you must copy seed phrases.
-IF RPC then these are throw away keys. no funds are moved and if corrupt or lost just make new ones. You do not need to set a password for the keys. no need to copy seed phrases. You do not need a wallet-keypair if just RPC. Skip to making validator-keypair
+
+IF RPC then these are throw away keys. You do not need to set a password for the keys. no need to copy seed phrases. You do not need a wallet-keypair if just RPC. Skip to making validator-keypair
 ```
 solana-keygen new -o ~/validator-keypair.json
+
 solana config set --keypair ~/validator-keypair.json
+
 solana-keygen new -o ~/vote-account-keypair.json
 ```
+making system services (sol.service and systuner.service) and the startup script.
 
-# making system services (sol.service and systuner.service) and the startup script.
-
-solana-validator shell script
+this is the solana-validator start up shell script which the system service (sol.service) will refernce
 ```
 sudo vim ~/start-validator.sh
 ```
@@ -201,7 +203,7 @@ exec solana-validator \
 --no-untrusted-rpc \
 --no-voting \
 --private-rpc \
---rpc-send-retry-ms 10 \
+--rpc-send-retry-ms 1000 \
 --enable-cpi-and-log-storage \
 --enable-rpc-transaction-history \
 --account-index program-id \
@@ -214,21 +216,20 @@ exec solana-validator \
 --identity ~/validator-keypair.json \
 --vote-account ~/vote-account-keypair.json \
 --log ~/log/solana-validator.log \
---accounts /mnt/ramdrive/solana-accounts \
+--accounts /mt/solana-accounts \
 --ledger /mt/ledger/validator-ledger \
---limit-ledger-size 200000000 \
---rpc-max-multiple-accounts 10000000 \
---rpc-pubsub-max-in-buffer-capacity 1000000 \
---rpc-pubsub-max-out-buffer-capacity 10000000000 \
+--limit-ledger-size 700000000 \
 --rpc-pubsub-max-active-subscriptions 100000 \
 --rpc-pubsub-max-connections 1000 \
 --rpc-threads 48 \
 ```
-make sure you left adjust all the flags (vim likes to paste things tabbed over and in purple you need to delet the tabbing and bring everything to the left)
 save / exit (:wq)
 make executable
 ```
 sudo chmod +x ~/start-validator.sh
+```
+change the ownership to user sol
+```
 sudo chown sol:sol start-validator.sh
 ```
 create system service - sol.service (run on boot, auto-restart when sys fail) 
@@ -305,27 +306,30 @@ start up and test
 
 ```
 sudo systemctl enable --now systuner.service
+
 sudo systemctl status systuner.service
+
 sudo systemctl enable --now sol.service
+
 sudo systemctl status sol.service
 ```
 or this (prefer the above the option to use bash is just for debugging)
 ```
 bash ~/start-validator.sh
 ```
-tail log to make sure it's fethcing snapshot and working
+tail log to make sure it's fetching snapshot and working
 ```
 sudo tail -f ~/log/solana-validator.log
 ```
 
 
-# Experimental Performance Tuning
-UPDATE: this tuning is now running across over half the machines and can be implemented
-
+# Performance Tuning
 CPU to performance mode (careful with this)
 ```
 sudo apt-get install cpufrequtils
+
 echo 'GOVERNOR="performance"' | sudo tee /etc/default/cpufrequtils
+
 sudo systemctl disable ondemand
 ```
 modifications to sysctl.conf
@@ -366,17 +370,3 @@ net.core.wmem_max=134217728
 net.core.wmem_default=134217728
 ```
 
-# revisiting setting to start-validator.sh (bottom section)
-
-remove big table
-
-```
-
---account-index-exclude-key kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6 \
-
-
-```
-```
-sudo mkdir /mt/solana-accounts; sudo chown sol:sol /mt/solana-accounts
-
-```
