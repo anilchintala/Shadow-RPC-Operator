@@ -64,41 +64,52 @@ sudo sysctl -p;
 sudo swapon --all --verbose;
 sudo -s cat << "EOF" > /home/sol/start-validator.sh
 #!/bin/bash
+# v0.5 Shadow Node ( updated 12/14/2021)
+export SOLANA_METRICS_CONFIG=host=https://metrics.solana.com:8086,db=mainnet-beta,u=mainnet-beta_write,p=password
+PATH=/home/sol/.local/share/solana/install/active_release/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
+export RUST_BACKTRACE=1
+export RUST_LOG=solana=info,solana_core::rpc=debug
+export GOOGLE_APPLICATION_CREDENTIALS=/home/sol/solarchival-d87f0b4f3f3c.json
 exec solana-validator \
---entrypoint entrypoint.mainnet-beta.solana.com:8001 \
---entrypoint entrypoint2.mainnet-beta.solana.com:8001 \
---entrypoint entrypoint3.mainnet-beta.solana.com:8001 \
---entrypoint entrypoint4.mainnet-beta.solana.com:8001 \
---entrypoint entrypoint5.mainnet-beta.solana.com:8001 \
---trusted-validator 7cVfgArCheMR6Cs4t6vz5rfnqd56vZq4ndaBrY5xkxXy \
---trusted-validator DDnAqxJVFo2GVTujibHt5cjevHMSE9bo8HJaydHoshdp \
---trusted-validator Ninja1spj6n9t5hVYgF3PdnYz2PLnkt7rvaw3firmjs \
---trusted-validator wWf94sVnaXHzBYrePsRUyesq6ofndocfBH6EmzdgKMS \
---trusted-validator 7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2 \
---trusted-validator GdnSyH3YtwcxFvQrVVJMm1JhTS4QVX7MFsX56uJLUfiZ \
---trusted-validator DE1bawNcRJB9rVm3buyMVfr8mBEoyyu73NBovf2oXJsJ \
---trusted-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S \
---rpc-port 8899 \
---dynamic-port-range 8002-8020 \
---no-port-check \
---gossip-port 8001 \
---no-untrusted-rpc \
---no-voting \
---private-rpc \
---rpc-send-retry-ms 1000 \
---enable-cpi-and-log-storage \
---enable-rpc-transaction-history \
---account-index program-id \
---account-index spl-token-owner \
---account-index spl-token-mint \
---no-duplicate-instance-check \
---wal-recovery-mode skip_any_corrupted_record \
---identity ~/validator-keypair.json \
---vote-account ~/vote-account-keypair.json \
---log ~/log/solana-validator.log \
---accounts /mt/solana-accounts \
---ledger /mt/ledger/validator-ledger \
---limit-ledger-size 725000000 \
+    --identity ~/validator-keypair.json \
+    --entrypoint entrypoint.mainnet-beta.solana.com:8001 \
+    --entrypoint entrypoint2.mainnet-beta.solana.com:8001 \
+    --entrypoint entrypoint3.mainnet-beta.solana.com:8001 \
+    --entrypoint entrypoint4.mainnet-beta.solana.com:8001 \
+    --entrypoint entrypoint5.mainnet-beta.solana.com:8001 \
+    --known-validator 7cVfgArCheMR6Cs4t6vz5rfnqd56vZq4ndaBrY5xkxXy \
+    --known-validator DDnAqxJVFo2GVTujibHt5cjevHMSE9bo8HJaydHoshdp \
+    --known-validator Ninja1spj6n9t5hVYgF3PdnYz2PLnkt7rvaw3firmjs \
+    --known-validator wWf94sVnaXHzBYrePsRUyesq6ofndocfBH6EmzdgKMS \
+    --known-validator 7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2 \
+    --known-validator GdnSyH3YtwcxFvQrVVJMm1JhTS4QVX7MFsX56uJLUfiZ \
+    --known-validator DE1bawNcRJB9rVm3buyMVfr8mBEoyyu73NBovf2oXJsJ \
+    --known-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S \
+    --rpc-port 8899 \
+    --dynamic-port-range 8002-8020 \
+    --no-port-check \
+    --gossip-port 8001 \
+    --no-untrusted-rpc \
+    --no-voting \
+    --private-rpc \
+    --rpc-bind-address 0.0.0.0 \
+    --rpc-send-retry-ms 10 \
+    --enable-cpi-and-log-storage \
+    --enable-rpc-transaction-history \
+    --enable-rpc-bigtable-ledger-storage \
+    --rpc-bigtable-timeout 600 \
+    --account-index program-id \
+    --account-index spl-token-owner \
+    --account-index spl-token-mint \
+    --rpc-pubsub-enable-vote-subscription \
+    --no-duplicate-instance-check \
+    --wal-recovery-mode skip_any_corrupted_record \
+    --vote-account ~/vote-account-keypair.json \
+    --log ~/log/solana-validator.log \
+    --accounts /mt/solana-accounts \
+    --ledger /mt/ledger/validator-ledger \
+    --limit-ledger-size 700000000 \
+    --rpc-pubsub-max-connections 1000 \
 EOF
 
 sudo chmod +x ~/start-validator.sh;

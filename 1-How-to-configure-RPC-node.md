@@ -124,6 +124,10 @@ sudo mkdir /mt/ledger/validator-ledger
 
 sudo ls -ld /mt/ledger
 
+sudo mkdir /mt/solana-accounts
+
+sudo chown sol:sol /mt/solana-accounts
+
 sudo chown sol:sol /mt/ledger
 
 sudo chown sol:sol ~/log
@@ -226,7 +230,6 @@ exec solana-validator \
     --ledger /mt/ledger/validator-ledger \
     --limit-ledger-size 700000000 \
     --rpc-pubsub-max-connections 1000 \
-    --enable-rpc-obsolete_v1_7 \
 
 ```
 save / exit (:wq)
