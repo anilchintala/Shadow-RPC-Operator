@@ -3,7 +3,6 @@
 More to this section coming soon.
 
 
-
 Healthcheck
 ```
 curl http://localhost:8899 -k -X POST -H "Content-Type: application/json" -d '
@@ -25,11 +24,11 @@ curl http://localhost:8899 -k -X POST -H "Content-Type: application/json" -H "Re
 Grafana Dashboard
 
 
-Discord Integration (Shadow Ops Channel)
+Discord Integration (Shadow Ops Channel) coming soon.
 
 
-Alerts
+Alerts coming soon.
 
 
-Useful server commands for running system checks:
+Useful server commands for running system checks coming soon.
 
