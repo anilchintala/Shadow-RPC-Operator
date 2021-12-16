@@ -9,7 +9,12 @@ sudo apt update -y;echo -ne '\n' | sudo apt upgrade -y;sudo apt-get dist-upgrade
 
 Download the script from SSC DAO Repo
 ```
-$
+sudo apt-get update
+
+sudo apt-get install git
+
+git clone https://github.com/Shadowy-Super-Coder-DAO/Shadow-RPC-Operator.git shadow-rpc-install-script
+
 ```
 Execute script
 ```
